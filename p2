@@ -1,0 +1,228 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+// acdhiebfg hdiceafbg
+struct node {
+    int key;
+    char letter;
+    struct node *lchild;
+    struct node *rchild;
+};
+
+typedef struct node* bstree;
+
+/*
+bstree stands for Binary Search Tree
+based on the book:
+    Introduction to Algorithms (3rd edition) by
+        Thomas H. Cormen
+        Charles E. Leiserson
+        Ronald L. Rivestt
+        Clifford Stein
+*/
+
+int empty_bstree(bstree);  // boolean return for empty or not trees
+bstree get_max(bstree);  // returns the maximum value in the bstree
+bstree instantiates_bstree(int, char);  // assign key to the tree node
+bstree destroy_bstree(bstree);  // destroys the node and all nodes below
+bstree insert_bstree(bstree, bstree);  // inserts a new node in the bstree
+bstree remove_bstree(bstree, int);  // remove a tree/subtree and his subtrees
+bstree search_bstree(bstree, int);  // search a node by key in the bstree
+void preorder_print(bstree);  // prints the whole tree in pre-order
+void inorder_print(bstree);  // prints the whole tree in-in order
+void postorder_print(bstree);  // prints the whole bstree in post-order
+
+/*
+
+void preorder_print(bstree tree){
+    if(tree != NULL){
+        printf("%d", tree.key);
+        preorder_print(tree.lchild);
+        preorder_print(tree.rchild);
+    }
+}
+
+void inorder_print(bstree tree){
+    if(tree != NULL){
+        inorder_print(tree.lchild);
+        printf("%d", tree.key);
+        inorder_print(tree.rchild);
+    }
+}
+
+void postorder_print(bstree tree){
+    if(tree != NULL){
+        postorder_print(tree.lchild);
+        postorder_print(tree.rchild);
+        printf("%d", tree.key);
+    }
+}
+
+*/
+
+
+
+
+// Main Function
+int main(void){
+    int op, valor, teste, i=0, qtd_valor;
+    bstree root = NULL;  
+    scanf("%d\n",&teste);
+    while(i<teste){
+    scanf("%d\n", &qtd_valor);   
+    for(int loop = 0; loop<qtd_valor; loop++){
+        
+        scanf("%d", valor);
+         
+         printf("Case %d:\n", i+1);
+         printf("Pre.:");
+         preorder_print(root);
+         printf("\nIn..:");
+         inorder_print(root);
+         printf("\nPost:");
+         postorder_print(root);
+         printf("\n");
+         
+         free(root);
+    }
+    i++;
+    }
+
+
+    return 0;
+}
+
+
+// Other Functions
+
+int empty_bstree(bstree tree){
+    return tree == NULL;
+}
+
+bstree get_max(bstree tree){
+    bstree max = tree;
+    while(max->rchild != NULL){
+        max = max->rchild;
+    }
+    return max;
+}
+
+bstree instantiates_bstree(int key, char letter){
+    bstree newtree;
+    newtree = (bstree) malloc(sizeof(struct node));
+    newtree->key = key;
+    newtree->letter = letter;
+    newtree->lchild = NULL;
+    newtree->lchild = NULL;
+
+    return newtree;
+}
+
+bstree destroy_bstree(bstree tree){
+    if( !empty_bstree(tree)){
+        destroy_bstree(tree->lchild);
+        destroy_bstree(tree->rchild);
+        free(tree);
+    }
+    return NULL;
+}
+
+bstree insert_bstree(bstree tree, bstree tobeinserted){
+    if( !empty_bstree(tree) ){
+        if (tobeinserted->key < tree->key) {
+            tree->lchild = insert_bstree(tree->lchild, tobeinserted);
+        } else if (tobeinserted->key > tree->key) {
+            tree->rchild = insert_bstree(tree->rchild, tobeinserted);
+        }
+    } else {
+        tree = tobeinserted;
+    }
+
+    return tree;
+}
+
+bstree remove_bstree(bstree tree, int key){
+    bstree toremove = search_bstree(tree, key);
+    if (toremove == NULL)
+        return NULL;                       // key doesn't exists
+    else if ( key < tree->key )
+        tree->lchild = remove_bstree(tree->lchild, key);
+    else if ( key > tree->key)    
+        tree->rchild = remove_bstree(tree->rchild, key);
+    else{                                       // element found
+        bstree auxtree, parent;
+        int hasleft = !empty_bstree(toremove->lchild);
+        int hasright = !empty_bstree(toremove->rchild);
+        if ( hasleft ){
+            if ( hasright ){                    // tree has both children
+                parent = tree;
+                auxtree = tree->lchild;
+                while(auxtree->rchild != NULL){         // searchs the largest number on the left
+                    parent = auxtree;
+                    auxtree = auxtree->rchild;
+                }
+
+                tree->key = auxtree->key;
+                if(parent == tree)                      // when parents key > root key, has to be removed
+                    parent->lchild = auxtree->lchild;
+                else
+                    parent->rchild = auxtree->lchild;
+                    
+                free(auxtree);
+
+            } else {                            // tree has only left child
+                auxtree = tree;
+                tree = tree->lchild;
+                free(auxtree);
+            } 
+
+        } else if ( hasright) {                 // tree has only right child
+            auxtree = tree;
+            tree = tree->rchild;
+            free(auxtree);
+
+        } else {                                // tree has no children
+            free(tree);
+            tree = NULL;
+        }
+    }
+
+    return tree;
+}
+
+bstree search_bstree(bstree tree, int key){
+    if (tree == NULL)
+        return NULL;  // empty tree
+    else if (key < tree->key)
+        return(search_bstree(tree->lchild, key));
+    else if (key > tree->key)
+        return(search_bstree(tree->lchild, key));
+    else
+        return(tree);  // found the info
+}
+
+void preorder_print(bstree tree){
+    if(tree != NULL){
+        printf(" %d", tree->key);
+        preorder_print(tree->lchild);
+        preorder_print(tree->rchild);
+    }
+}
+
+void inorder_print(bstree tree){
+    if(tree != NULL){
+        inorder_print(tree->lchild);
+        printf(" %d", tree->key);
+        inorder_print(tree->rchild);
+    }
+}
+
+void postorder_print(bstree tree){
+    if(tree != NULL){
+        postorder_print(tree->lchild);
+        postorder_print(tree->rchild);
+        printf("%d", tree->key);
+    }
+}
+
+
